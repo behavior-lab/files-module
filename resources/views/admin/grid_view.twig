@@ -1,0 +1,75 @@
+{% extends template.layout ?: "theme::layouts/default" %}
+
+{% block content %}
+    {{ asset_add("scripts.js", "streams::js/table/table.js") }}
+    <style>
+    .grid {
+        padding: 15px;
+
+    }
+
+    .grid .item_wrapper {
+        width: min-content;
+    }
+
+    .grid .item_wrapper .panel > .image-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+    }
+
+    .grid .item_wrapper .panel > .image-container > .tag {
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+    }
+
+    .grid .item_wrapper .panel > .image-container > .actions {
+        position: absolute;
+        left: 5px;
+        right: 5px;
+        top: 5px;
+        display: flex;
+        justify-content: space-between;
+        opacity: 0;
+        transition: all 100ms ease-in-out;
+    }
+
+    .grid .item_wrapper .panel:hover > .image-container > .actions {
+        opacity: 1;
+    }
+
+    .grid .item_wrapper .panel > strong,
+    .grid .item_wrapper .panel > small,
+    .grid .item_wrapper .panel > .keywords {
+        width: 300px;
+        display: block;
+        overflow-wrap: break-word;
+    }
+    </style>
+{#     {{ dd(grid) }}#}
+
+    <div class="{{ grid.options.container_class ?: 'container-fluid' }}">
+        {{ view("streams::table/partials/filters", {'table': grid.table}) }}
+        {{ view("streams::table/partials/views", {'table': grid.table}) }}
+        {% set entries = grid.table.entries %}
+        {# <div class="container-fluid"> #}
+        {% if not entries.isEmpty() %}
+            <div class="card">
+                <div class="grid grid--sortable sortable row">
+                    {% for entry in entries %}
+                        {{ view("anomaly.module.files::admin/partials/item_wrapper", {'entry': entry, 'grid': grid}) }}
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="panel">
+                <div class="panel-body">
+                    {{ trans(grid.options.get('no_results_message', 'streams::message.no_results')) }}
+                </div>
+            </div>
+        {% endif %}
+        {{ view("streams::table/partials/footer", {'table': grid.table}) }}
+
+    </div>
+{% endblock %}

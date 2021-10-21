@@ -5,9 +5,11 @@ use Anomaly\FilesModule\File\Contract\FileRepositoryInterface;
 use Anomaly\FilesModule\File\Form\EntryFormBuilder;
 use Anomaly\FilesModule\File\Form\FileEntryFormBuilder;
 use Anomaly\FilesModule\File\Form\FileFormBuilder;
+use Anomaly\FilesModule\File\Grid\FileGridBuilder;
 use Anomaly\FilesModule\File\Table\FileTableBuilder;
 use Anomaly\FilesModule\Folder\Command\GetFolder;
 use Anomaly\FilesModule\Folder\Contract\FolderInterface;
+use Anomaly\PreferencesModule\Preference\Contract\PreferenceRepositoryInterface;
 use Anomaly\Streams\Platform\Http\Controller\AdminController;
 
 /**
@@ -16,6 +18,7 @@ use Anomaly\Streams\Platform\Http\Controller\AdminController;
  * @link          http://pyrocms.com/
  * @author        PyroCMS, Inc. <support@pyrocms.com>
  * @author        Ryan Thompson <ryan@pyrocms.com>
+ * @author        Claus Hjort Bube <chb@behaviorlab.io>
  */
 class FilesController extends AdminController
 {
@@ -26,9 +29,32 @@ class FilesController extends AdminController
      * @param  FileTableBuilder $table
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function index(FileTableBuilder $table)
+    public function index(
+        FileGridBuilder $grid,
+        FileTableBuilder $table,
+        PreferenceRepositoryInterface $preferences
+    )
     {
-        return $table->render();
+        if ($preferences->value('anomaly.module.files::file_view', 'grid') == 'table') {
+            return $table->render();
+        }
+        $table->make();
+        return view('anomaly.module.files::admin/grid_view', ['grid' => $table]);
+        return $grid->render();
+    }
+
+    /**
+     * Change the pages view.
+     *
+     * @param PreferenceRepositoryInterface $preferences
+     * @param                               $view
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function change(PreferenceRepositoryInterface $preferences, $view)
+    {
+        $preferences->set('anomaly.module.files::file_view', $view);
+
+        return $this->redirect->back();
     }
 
     /**
