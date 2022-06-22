@@ -21,7 +21,7 @@ class FileSanitizer
         if (!env('CLEAN_FILE_NAMES', true)) {
             return $name;
         }
-        
+
         $name = rawurldecode($name);
 
         // sanitize filename
@@ -31,7 +31,8 @@ class FileSanitizer
             [\x00-\x1F]|             # control characters http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx
             [\x7F\xA0\xAD]|          # non-printing characters DEL, NO-BREAK SPACE, SOFT HYPHEN
             [#\[\]@!$&\'()+,;=]|     # URI reserved https://tools.ietf.org/html/rfc3986#section-2.2
-            [{}^\~`]                 # URL unsafe characters https://www.ietf.org/rfc/rfc1738.txt
+            [{}^\~`]|                 # URL unsafe characters https://www.ietf.org/rfc/rfc1738.txt
+            [\s]                     # Whitespaces
             ~x',
             '-',
             $name
