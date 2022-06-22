@@ -9,6 +9,8 @@ use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
  * @link   http://pyrocms.com/
  * @author PyroCMS, Inc. <support@pyrocms.com>
  * @author Ryan Thompson <ryan@pyrocms.com>
+ * @author Behavior <support@behaviorlab.io>
+ * @author Claus Hort Bube <chb@behaviorlab.io>
  */
 class FilesModuleSections
 {

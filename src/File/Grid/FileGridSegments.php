@@ -6,8 +6,8 @@ use Anomaly\FilesModule\File\Contract\FileInterface;
  * Class PageTreeSegments
  *
  * @link          http://pyrocms.com/
- * @author        Behavior <support@behavior-lab.io>
- * @author        Claus Bube <chb@behavior-lab.io>
+ * @author        Behavior <support@behaviorlab.io>
+ * @author        Claus Bube <chb@behaviorlab.io>
  */
 class FileGridSegments
 {
