@@ -1,20 +1,19 @@
 <?php namespace Anomaly\FilesModule\File;
 
-use League\Flysystem\File;
-use Illuminate\Support\Str;
-use League\Flysystem\MountManager;
-use Anomaly\Streams\Platform\Image\Image;
-use League\Flysystem\FilesystemInterface;
-use Anomaly\FilesModule\File\Command\GetType;
-use Anomaly\FilesModule\File\Command\GetImage;
-use Anomaly\FilesModule\File\Command\GetResource;
-use Anomaly\FilesModule\Disk\Contract\DiskInterface;
-use Anomaly\FilesModule\File\Contract\FileInterface;
 use Anomaly\FilesModule\Disk\Adapter\AdapterFilesystem;
+use Anomaly\FilesModule\Disk\Contract\DiskInterface;
+use Anomaly\FilesModule\File\Command\GetImage;
 use Anomaly\FilesModule\File\Command\GetPreviewSupport;
+use Anomaly\FilesModule\File\Command\GetResource;
+use Anomaly\FilesModule\File\Command\GetType;
+use Anomaly\FilesModule\File\Contract\FileInterface;
 use Anomaly\FilesModule\Folder\Contract\FolderInterface;
 use Anomaly\Streams\Platform\Entry\Contract\EntryInterface;
+use Anomaly\Streams\Platform\Image\Image;
 use Anomaly\Streams\Platform\Model\Files\FilesFilesEntryModel;
+use League\Flysystem\File;
+use League\Flysystem\FilesystemInterface;
+use League\Flysystem\MountManager;
 
 /**
  * Class FileModel
@@ -64,13 +63,7 @@ class FileModel extends FilesFilesEntryModel implements FileInterface
             return null;
         }
 
-        $url = $filesystem->url($this->path());
-
-        if (Str::startsWith($url, ['http'])) {
-            $url = str_replace(' ', '+', $url);
-        }
-
-        return str_replace('\\', '/', $url);
+        return str_replace('\\', '/', $filesystem->url($this->path()));
     }
 
     /**
