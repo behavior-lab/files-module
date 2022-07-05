@@ -47,7 +47,6 @@
         overflow-wrap: break-word;
     }
     </style>
-{#     {{ dd(grid) }}#}
 
     <div class="{{ grid.options.container_class ?: 'container-fluid' }}">
         {{ view("streams::table/partials/filters", {'table': grid.table}) }}
