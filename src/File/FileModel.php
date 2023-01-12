@@ -1,5 +1,6 @@
 <?php namespace Anomaly\FilesModule\File;
 
+use Anomaly\AddonsModule\Addon\AddonRepository;
 use Anomaly\BlocksModule\Block\BlockModel;
 use Anomaly\BlocksModule\Block\BlockRepository;
 use Anomaly\PagesModule\Page\PageModel;
@@ -455,6 +456,7 @@ class FileModel extends FilesFilesEntryModel implements FileInterface
                                     WHERE entry_id = " . $entry['entry_id'] . "
                                       AND entry_type = '" . $entry['entry_model_name'] . "'");
                 }
+
                 if ($entry['namespace'] === 'pages') {
                     $table_pages_data = \Illuminate\Support\Facades\DB::select(
                         "SELECT *
@@ -466,6 +468,19 @@ class FileModel extends FilesFilesEntryModel implements FileInterface
                         $entryTitle = $concretePageModel?->getTitle() . ' (' . $concretePageModel?->getPath() .')';
                     }
                 }
+
+                if ($entry['namespace'] === 'pages') {
+                    $table_pages_data = \Illuminate\Support\Facades\DB::select(
+                        "SELECT *
+                                    FROM elos_pages_pages
+                                    WHERE entry_id = " . $entry['entry_id'] . "
+                                      AND entry_type = '" . $entry['entry_model_name'] . "'");
+                    if ($table_pages_data) {
+                        $concretePageModel = PageModel::find($table_pages_data[0]->id);
+                        $entryTitle = $concretePageModel?->getTitle() . ' (' . $concretePageModel?->getPath() .')';
+                    }
+                }
+
                 if ($table_block_data) {
                     $table_page_data = \Illuminate\Support\Facades\DB::select(
                         "SELECT *
@@ -480,17 +495,50 @@ class FileModel extends FilesFilesEntryModel implements FileInterface
                         $streamRepository = app(StreamRepository::class);
                         $blockModel = $streamRepository->findBySlugAndNamespace($entry['stream'], $entry['namespace']);
                         $entryTitle = $entryTitle ? $entryTitle . ' in block: ' . $blockModel->getName() : $blockModel->getName();
+                    } else {
+                        $areaModel = app($table_block_data[0]->area_type);
+                        $areaEntry = $areaModel->find($table_block_data[0]->area_id);
+                        $addonRepository = app(AddonRepository::class);
+                        $streamRepository = app(StreamRepository::class);
+                        $streamModel = $streamRepository->findBySlugAndNamespace($entry['stream'], $entry['namespace']);
+                        $entryName = $streamModel->getName();
+                        if (Str::contains($areaModel->getStream()->getName(), '::')) {
+                            $entryNamespace = explode('::', $areaModel->getStream()->getName())[0];
+                            $addon = $addonRepository->findByNamespace($entryNamespace);
+                            $addonStream = app($streamModel->getBoundEntryModelName());
+//                            $addonStreamEntry = $addonStream->find($entry['entry_id']);
+                            $entryTitle = 'Block: ' . trans($entryName) . ' (Title: ' . $areaEntry->getTitle() . ') in ' . trans($addon->getTitle()) . ' Module';
+                        }
+//                        dd($entryTitle, $areaModel->getStream()->getName(), $table_block_data[0], $areaModel, get_class_methods($areaModel->getStream()), $addon);
+                        $entryTitle = $entryTitle ?? 'Block: ' . trans($entryName) . ' (Title: ' . $areaEntry->getTitle() . ')';
                     }
                 }
 
                 if ($entryTitle) {
                     $matches[] = $entryTitle;
                 } else {
+//                    dd($entry['namespace'], $entry['stream']);
                     $streamRepository = app(StreamRepository::class);
                     $streamModel = $streamRepository->findBySlugAndNamespace($entry['stream'], $entry['namespace']);
-                    $entryTitle = $streamModel->getName();
+                    $entryName = $streamModel->getName();
+                    if (Str::contains($entryName, '::')) {
+                        $entryNamespace = explode('::', $entryName)[0];
+                        $addonRepository = app(AddonRepository::class);
+                        $addon = $addonRepository->findByNamespace($entryNamespace);
+                        $addonStream = app($streamModel->getBoundEntryModelName());
+                        $addonStreamEntry = $addonStream->find($entry['entry_id']);
+                        $entryTitle = trans($entryName) . ' (Title: ' . $addonStreamEntry->getTitle() . ') in ' . trans($addon->getTitle()) . ' Module';
+                    } else {
+//                        $addonRepository = app(AddonRepository::class);
+//                        $addonStream = app($streamModel->getBoundEntryModelName());
+//                        $addonStreamEntry = $addonStream->find($entry['entry_id']);
+                        $entryTitle = Str::studly($entry['namespace']) . ': ' . trans($entryName) . ' (' . json_encode($entry) . ')';
+                    }
 
-                    $matches[] = $entry['entry_model_name'] . '('.$entryTitle.') ' . $entry['field'] . ': BlockID' . $entry['entry_id'];
+                    $matches[] = $entryTitle ?? $entry['entry_model_name'] . '('.$entryTitle.') ' . $entry['field'] . ': ID' . $entry['entry_id'];
+                }
+                if (!$entryTitle) {
+                    $matches[] = json_encode($entry);
                 }
             }
 
