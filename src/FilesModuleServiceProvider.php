@@ -83,6 +83,7 @@ class FilesModuleServiceProvider extends AddonServiceProvider
         'admin/files'                       => 'Anomaly\FilesModule\Http\Controller\Admin\FilesController@index',
         'admin/files/where'                 => 'Anomaly\FilesModule\Http\Controller\Admin\FilesController@where',
         'admin/files/move'                  => 'Anomaly\FilesModule\Http\Controller\Admin\FilesController@move',
+        'admin/files/activate-usage/{id?}'  => 'Anomaly\FilesModule\Http\Controller\Admin\FilesController@activateUsage',
         'admin/files/upload/choose'         => 'Anomaly\FilesModule\Http\Controller\Admin\UploadController@choose',
         'admin/files/upload/handle'         => 'Anomaly\FilesModule\Http\Controller\Admin\UploadController@upload',
         'admin/files/upload/recent'         => 'Anomaly\FilesModule\Http\Controller\Admin\UploadController@recent',

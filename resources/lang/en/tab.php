@@ -6,4 +6,5 @@ return [
     'fields'  => 'Fields',
     'general' => 'General',
     'options' => 'Options',
+    'usages'   => 'Usages',
 ];

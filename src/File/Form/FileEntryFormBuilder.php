@@ -19,12 +19,15 @@ class FileEntryFormBuilder extends MultipleFormBuilder
      * @var array
      */
     protected $buttons = [
+        'activate-usage' => [
+            'type' => 'info',
+        ],
         'versions',
         'cancel',
         'view' => [
             'enabled' => 'edit',
-            'target'  => '_blank',
-            'href'    => 'admin/files/view/{request.route.parameters.id}',
+            'target' => '_blank',
+            'href' => 'admin/files/view/{request.route.parameters.id}',
         ],
     ];
 
@@ -55,7 +58,7 @@ class FileEntryFormBuilder extends MultipleFormBuilder
 
         $entry = $builder->getFormEntry();
 
-        $file->entry_id   = $entry->getId();
+        $file->entry_id = $entry->getId();
         $file->entry_type = get_class($entry);
     }
 

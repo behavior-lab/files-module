@@ -63,4 +63,7 @@ return [
         'name'         => 'Caption',
         'instructions' => 'Specify accompanying text for an image.',
     ],
+    'is_usage_known'       => [
+        'name'         => 'Is usage known',
+    ],
 ];

@@ -44,6 +44,12 @@ class FileEntryFormSections
                                 'file_caption',
                             ],
                         ],
+                        'usages'  => [
+                            'title'  => 'anomaly.module.files::tab.usages',
+                            'fields' => [
+                                'file_usages',
+                            ],
+                        ],
                     ],
                 ],
                 'fields'  => [

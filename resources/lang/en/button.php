@@ -10,4 +10,5 @@ return [
     'new_folder' => 'New Folder',
     'table_view' => 'Table View',
     'grid_view' => 'Grid View',
+    'activate-usage' => 'Activate usage',
 ];

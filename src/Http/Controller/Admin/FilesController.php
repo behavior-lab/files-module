@@ -2,6 +2,7 @@
 
 use Anomaly\FilesModule\File\Contract\FileInterface;
 use Anomaly\FilesModule\File\Contract\FileRepositoryInterface;
+use Anomaly\FilesModule\File\FileRepository;
 use Anomaly\FilesModule\File\Form\EntryFormBuilder;
 use Anomaly\FilesModule\File\Form\FileEntryFormBuilder;
 use Anomaly\FilesModule\File\Form\FileFormBuilder;
@@ -10,6 +11,7 @@ use Anomaly\FilesModule\File\Table\FileTableBuilder;
 use Anomaly\FilesModule\Folder\Command\GetFolder;
 use Anomaly\FilesModule\Folder\Contract\FolderInterface;
 use Anomaly\PreferencesModule\Preference\Contract\PreferenceRepositoryInterface;
+use Anomaly\RedirectsModule\Redirect\RedirectResponse;
 use Anomaly\Streams\Platform\Http\Controller\AdminController;
 
 /**
@@ -123,5 +125,11 @@ class FilesController extends AdminController
         }
 
         return $this->response->json(compact('success', 'exists'));
+    }
+
+    public function activateUsage(): \Illuminate\Http\RedirectResponse
+    {
+        FileRepository::activateUsage();
+        return back();
     }
 }

@@ -1,5 +1,9 @@
 <?php namespace Anomaly\FilesModule\File;
 
+use Anomaly\BlocksModule\Block\BlockModel;
+use Anomaly\BlocksModule\Block\BlockRepository;
+use Anomaly\PagesModule\Page\PageModel;
+use Anomaly\Streams\Platform\Stream\StreamRepository;
 use League\Flysystem\File;
 use Illuminate\Support\Str;
 use League\Flysystem\MountManager;
@@ -25,7 +29,6 @@ use Anomaly\Streams\Platform\Model\Files\FilesFilesEntryModel;
  */
 class FileModel extends FilesFilesEntryModel implements FileInterface
 {
-
     /**
      * This model is versionable.
      *
@@ -238,7 +241,7 @@ class FileModel extends FilesFilesEntryModel implements FileInterface
     public function getMimeType()
     {
         // SVG Mime type bug is fixed for PHP 7.x #79045
-        if($this->mime_type == 'image/svg') {
+        if ($this->mime_type == 'image/svg') {
             return 'image/svg+xml';
         }
         return $this->mime_type;
@@ -365,7 +368,7 @@ class FileModel extends FilesFilesEntryModel implements FileInterface
             $array = array_merge($entry->toArray(), $array);
         }
 
-        $array['path']     = $this->path();
+        $array['path'] = $this->path();
         $array['location'] = $this->location();
 
         return $array;
@@ -415,6 +418,117 @@ class FileModel extends FilesFilesEntryModel implements FileInterface
         return $this
             ->getDisk()
             ->getSlug();
+    }
+
+    /**
+     *
+     */
+    public function getUsage(bool $withPage = false): array
+    {
+        $matches = [];
+        if (!session()->has('file-usage')) {
+            FileRepository::activateUsage();
+        }
+        if (session()->has('file-usage')) {
+            $usageEntries = session('file-usage');
+            foreach ($usageEntries as $entry) {
+                if ($entry['file_id'] == $this->id) {
+                    $matches[] = $entry;
+                }
+            }
+        }
+        return $matches;
+    }
+
+    public function getUsagesAttribute()
+    {
+        if (session()->has('file-usage')) {
+            $matches = [];
+            $usageEntries = $this->getUsage();
+            foreach ($usageEntries as $entry) {
+                $entryTitle = '';
+                $table_block_data = null;
+                if ($entry['namespace'] === 'blocks') {
+                    $table_block_data = \Illuminate\Support\Facades\DB::select(
+                        "SELECT *
+                                    FROM elos_blocks_blocks
+                                    WHERE entry_id = " . $entry['entry_id'] . "
+                                      AND entry_type = '" . $entry['entry_model_name'] . "'");
+                }
+                if ($entry['namespace'] === 'pages') {
+                    $table_pages_data = \Illuminate\Support\Facades\DB::select(
+                        "SELECT *
+                                    FROM elos_pages_pages
+                                    WHERE entry_id = " . $entry['entry_id'] . "
+                                      AND entry_type = '" . $entry['entry_model_name'] . "'");
+                    if ($table_pages_data) {
+                        $concretePageModel = PageModel::find($table_pages_data[0]->id);
+                        $entryTitle = $concretePageModel?->getTitle() . ' (' . $concretePageModel?->getPath() .')';
+                    }
+                }
+                if ($table_block_data) {
+                    $table_page_data = \Illuminate\Support\Facades\DB::select(
+                        "SELECT *
+                                    FROM elos_pages_pages
+                                    WHERE entry_id = " . $table_block_data[0]->area_id . "
+                                      AND entry_type = '" . str_replace('\\', '\\\\', $table_block_data[0]->area_type) . "'");
+
+                    if ($table_page_data) {
+                        $concretePageModel = PageModel::find($table_page_data[0]->id);
+                        $entryTitle = $concretePageModel?->getTitle() . ' (' . $concretePageModel?->getPath() .')';
+
+                        $streamRepository = app(StreamRepository::class);
+                        $blockModel = $streamRepository->findBySlugAndNamespace($entry['stream'], $entry['namespace']);
+                        $entryTitle = $entryTitle ? $entryTitle . ' in block: ' . $blockModel->getName() : $blockModel->getName();
+                    }
+                }
+
+                if ($entryTitle) {
+                    $matches[] = $entryTitle;
+                } else {
+                    $streamRepository = app(StreamRepository::class);
+                    $streamModel = $streamRepository->findBySlugAndNamespace($entry['stream'], $entry['namespace']);
+                    $entryTitle = $streamModel->getName();
+
+                    $matches[] = $entry['entry_model_name'] . '('.$entryTitle.') ' . $entry['field'] . ': BlockID' . $entry['entry_id'];
+                }
+            }
+
+            return $matches ? join("\n", $matches) : 'No usage found';
+        }
+        return 'Please active file usage first';
+    }
+
+    /**
+     *
+     */
+    public function getUsageAsString(bool $withPage = false): string
+    {
+        $matches = [];
+        if (session()->has('file-usage')) {
+            $usageEntries = $this->getUsage($withPage);
+            foreach ($usageEntries as $entry) {
+                $matches[] = $entry['entry_model_name'] . '->' . $entry['field'];
+            }
+
+            return join(', ', $matches);
+        }
+        return 'Please active file usage first';
+    }
+
+    /**
+     *
+     */
+    public function isUsed(): ?bool
+    {
+        $matches = [];
+        if (session()->has('file-usage')) {
+            if ($this->getUsage()) {
+                return true;
+            }
+            return false;
+        }
+        return null;
     }
 
     /**

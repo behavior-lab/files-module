@@ -26,5 +26,9 @@ class FileFormBuilder extends FormBuilder
         'caption',
         'description',
         'keywords',
+        'usages' => [
+            'type' => 'anomaly.field_type.textarea',
+            'disabled' => true,
+        ],
     ];
 }

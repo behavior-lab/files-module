@@ -127,6 +127,9 @@ class FileTableBuilder extends TableBuilder
                 'updated_at_human' => 'entry.updated_at.diffForHumans()'
             ],
         ],
+        'is_usage_known'          => [
+            'value'       => 'entry.isUsed() is same as (true) ? "Yes" : entry.isUsed() is same as (false) ? "No" : "Please active file usage first"',
+        ],
     ];
 
     /**
