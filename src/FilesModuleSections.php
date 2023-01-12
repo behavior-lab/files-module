@@ -43,6 +43,12 @@ class FilesModuleSections
                             'href'    => 'admin/files/change/' . ($view == 'grid' ? 'table' : 'grid'),
                             'text'    => 'anomaly.module.files::button.' . ($view == 'grid' ? 'table_view' : 'grid_view'),
                         ],
+                        'activate-usage' => [
+                            'type'    => 'info',
+                            'icon'    => 'fas fa-refresh',
+                            'href'    => 'admin/files/activate-usage',
+                            'text'    => 'anomaly.module.files::button.activate-usage',
+                        ],
                     ],
                 ],
                 'folders' => [
