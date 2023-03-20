@@ -59,7 +59,7 @@ class FileRepository extends EntryRepository implements FileRepositoryInterface
                  elos_streams_streams ess
             WHERE ess.id = esa.stream_id
               AND esa.field_id = esf.id
-              AND esf.type IN ('anomaly.field_type.file', 'anomaly.field_type.files', 'anomaly.field_type.images')");
+              AND esf.type IN ('anomaly.field_type.file', 'anomaly.field_type.files', 'anomaly.field_type.image', 'conduct_lab.field_type.image2')");
 
         $matches = [];
         foreach ($fileStreamUsages as $fileStreamUsage) {
