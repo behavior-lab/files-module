@@ -64,16 +64,16 @@ class FileRepository extends EntryRepository implements FileRepositoryInterface
         $matches = [];
         foreach ($fileStreamUsages as $fileStreamUsage) {
             try {
+                if (!array_key_exists($fileStreamUsage->stream_namespace, $matches)) {
+                    $matches[$fileStreamUsage->stream_namespace] = [];
+                }
+                if (!array_key_exists($fileStreamUsage->stream_slug, $matches[$fileStreamUsage->stream_namespace])) {
+                    $matches[$fileStreamUsage->stream_namespace][$fileStreamUsage->stream_slug] = [];
+                }
+                if (!array_key_exists($fileStreamUsage->field_slug, $matches[$fileStreamUsage->stream_namespace][$fileStreamUsage->stream_slug])) {
+                    $matches[$fileStreamUsage->stream_namespace][$fileStreamUsage->stream_slug][$fileStreamUsage->field_slug] = [];
+                }
                 if ($fileStreamUsage->type !== 'anomaly.field_type.files') {
-                    if (!array_key_exists($fileStreamUsage->stream_namespace, $matches)) {
-                        $matches[$fileStreamUsage->stream_namespace] = [];
-                    }
-                    if (!array_key_exists($fileStreamUsage->stream_slug, $matches[$fileStreamUsage->stream_namespace])) {
-                        $matches[$fileStreamUsage->stream_namespace][$fileStreamUsage->stream_slug] = [];
-                    }
-                    if (!array_key_exists($fileStreamUsage->field_slug, $matches[$fileStreamUsage->stream_namespace][$fileStreamUsage->stream_slug])) {
-                        $matches[$fileStreamUsage->stream_namespace][$fileStreamUsage->stream_slug][$fileStreamUsage->field_slug] = [];
-                    }
                     $data = [];
                     if ($fileStreamUsage->translatable == 1) {
                         $table_data = \Illuminate\Support\Facades\DB::select(
@@ -119,6 +119,52 @@ class FileRepository extends EntryRepository implements FileRepositoryInterface
                         'translatable' => $fileStreamUsage->translatable,
                         'data' => $data,
                     ];
+                } else {
+                    $data = [];
+                    if ($fileStreamUsage->translatable == 1) {
+                        $table_data = \Illuminate\Support\Facades\DB::select(
+                            "SELECT *, " . $fileStreamUsage->field_slug . "_id as stream_file_value
+                                            FROM elos_" . $fileStreamUsage->stream_namespace . '_' . $fileStreamUsage->stream_slug . "_translations
+                                            WHERE " . $fileStreamUsage->field_slug . "_id IS NOT NULL");
+                        foreach ($table_data as $item) {
+                            if (property_exists($item, 'deleted_at') && $item->deleted_at) {
+                                continue;
+                            }
+                            $data[$item->id] = [
+                                'id' => $item->id,
+                                'entry_id' => $item->entry_id,
+                                'value' => $item->stream_file_value,
+                            ];
+                        }
+                    } else {
+                        $table_data = \Illuminate\Support\Facades\DB::select(
+                            "SELECT *, file_id as stream_file_value
+                                            FROM elos_" . $fileStreamUsage->stream_namespace . '_' . $fileStreamUsage->stream_slug . '_' . $fileStreamUsage->field_slug);
+                        foreach ($table_data as $item) {
+                            if (property_exists($item, 'deleted_at') && $item->deleted_at) {
+                                continue;
+                            }
+                            $data[$item->id] = [
+                                'id' => $item->id,
+                                'value' => $item->stream_file_value,
+                            ];
+                        }
+                    }
+                    $slug = ucfirst(camel_case($fileStreamUsage->stream_slug));
+                    $namespace = ucfirst(camel_case($fileStreamUsage->stream_namespace));
+
+                    $entryModelName = "Anomaly\\\\Streams\\\\Platform\\\\Model\\\\{$namespace}\\\\{$namespace}{$slug}EntryModel";
+                    $matches[$fileStreamUsage->stream_namespace][$fileStreamUsage->stream_slug][$fileStreamUsage->field_slug] = [
+                        'stream_id' => $fileStreamUsage->stream_id,
+                        'stream_namespace' => $fileStreamUsage->stream_namespace,
+                        'stream_slug' => $fileStreamUsage->stream_slug,
+                        'field_id' => $fileStreamUsage->field_id,
+                        'field_slug' => $fileStreamUsage->field_slug,
+                        'entry_model_name' => $entryModelName,
+                        'translatable' => $fileStreamUsage->translatable,
+                        'data' => $data,
+                    ];
+//                    dd($fileStreamUsage, $matches);
                 }
             } catch (\Throwable $throwable) {
                 dd($fileStreamUsage->stream_namespace . '_' . $fileStreamUsage->stream_slug . '.' . $fileStreamUsage->field_slug . '::' . $fileStreamUsage->field_id, $throwable->getMessage());
