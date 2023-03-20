@@ -1,0 +1,18 @@
+<div data-id="{{ entry.id }}" class="item_wrapper">
+    <div class="col-md">
+        <div class="panel">
+            <div class="image-container">
+                {{ entry.preview(200,150) | raw }}
+                {{ entry.size_label | raw }}
+                <div class="actions">
+                    {{ buttons(grid.buttons)|replace({'{entry.id}': entry.id})|raw }}
+                </div>
+            </div>
+            <strong>{{ entry.name }}</strong>
+            <small class="text-muted">{{ entry.folder.disk.slug }}://{{ entry.folder.slug }}
+                /{{ entry.name }}</small>
+            <br>
+            <span class="keywords">{{ entry.keywords.labels|join }}</span>
+        </div>
+    </div>
+</div>
